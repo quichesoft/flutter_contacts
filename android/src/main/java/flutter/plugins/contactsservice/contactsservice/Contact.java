@@ -108,8 +108,8 @@ public class Contact {
             }
         }
 
-        ArrayList<HashMap> events = (ArrayList<HashMap>) map.get("event");
-        if (webs != null) {
+        ArrayList<HashMap> events = (ArrayList<HashMap>) map.get("events");
+        if (events != null) {
             for (HashMap event : events) {
                 contact.events.add(Item.fromMap(event));
             }
