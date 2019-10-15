@@ -157,6 +157,8 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                     CNContactNameSuffixKey,
                     CNContactPostalAddressesKey,
                     CNContactOrganizationNameKey,
+                    CNContactBirthdayKey,
+                    CNContactDatesKey,
                     CNContactJobTitleKey] as [Any]
         do {
             // Check if the contact exists
@@ -164,13 +166,33 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                 
                 /// Update the contact that was retrieved from the store
                 //Simple fields
-                contact.givenName = dictionary["givenName"] as? String ?? ""
-                contact.familyName = dictionary["familyName"] as? String ?? ""
-                contact.middleName = dictionary["middleName"] as? String ?? ""
-                contact.namePrefix = dictionary["prefix"] as? String ?? ""
-                contact.nameSuffix = dictionary["suffix"] as? String ?? ""
-                contact.organizationName = dictionary["company"] as? String ?? ""
-                contact.jobTitle = dictionary["jobTitle"] as? String ?? ""
+                if let givenName = dictionary["givenName"] as? String {
+                    contact.givenName = givenName
+                }
+                
+                if let familyName = dictionary["familyName"] as? String {
+                    contact.familyName = familyName
+                }
+                
+                if let middleName = dictionary["middleName"] as? String {
+                    contact.middleName = middleName
+                }
+                
+                if let namePrefix = dictionary["namePrefix"] as? String {
+                    contact.namePrefix = namePrefix
+                }
+
+                if let nameSuffix = dictionary["nameSuffix"] as? String {
+                    contact.nameSuffix = nameSuffix
+                }
+                
+                if let organizationName = dictionary["organizationName"] as? String {
+                    contact.organizationName = organizationName
+                }
+
+                if let jobTitle = dictionary["jobTitle"] as? String {
+                    contact.jobTitle = jobTitle
+                }
                 
                 //Phone numbers
                 if let phoneNumbers = dictionary["phones"] as? [[String:String]]{
@@ -209,19 +231,15 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                 
                 if let events = dictionary["events"] as? [[String:String]]{
                     for event in events {
-                        print("Adding events")
                         guard let dateString = event["value"], let date = df.date(from: dateString) else {
-                            print("nothing")
                             continue
                         }
                         
                         let label = event["label"] ?? ""
                         let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: date)
-                        if label == "birthday" {
-                            print("Birthday")
+                        if label.lowercased() == "birthday" {
                             contact.birthday = dateComponents
                         } else {
-                            print("Normal")
                             let nsDateComponents = NSDateComponents()
                             nsDateComponents.year = dateComponents.year ?? 0
                             nsDateComponents.month = dateComponents.month ?? 0
