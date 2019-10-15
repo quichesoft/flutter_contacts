@@ -4,6 +4,12 @@ import Contacts
 
 @available(iOS 9.0, *)
 public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
+    let df = DateFormatter()
+    
+    public override init() {
+         df.dateFormat = "yyyy-MM-dd"
+    }
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "github.com/clovisnicolas/flutter_contacts", binaryMessenger: registrar.messenger())
         let instance = SwiftContactsServicePlugin()
@@ -60,7 +66,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                CNContactPostalAddressesKey,
                CNContactOrganizationNameKey,
                CNContactThumbnailImageDataKey,
-               CNContactNoteKey,
                CNContactUrlAddressesKey,
                CNContactBirthdayKey,
                CNContactDatesKey,
@@ -75,7 +80,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                CNContactNameSuffixKey,
                CNContactPostalAddressesKey,
                CNContactOrganizationNameKey,
-               CNContactNoteKey,
                CNContactUrlAddressesKey,
                CNContactBirthdayKey,
                CNContactDatesKey,
@@ -137,7 +141,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
     }
     
     func updateContact(dictionary : [String:Any]) -> Bool{
-        
         // Check to make sure dictionary has an identifier
         guard let identifier = dictionary["identifier"] as? String else{
             return false;
@@ -154,7 +157,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                     CNContactNameSuffixKey,
                     CNContactPostalAddressesKey,
                     CNContactOrganizationNameKey,
-                    CNContactNoteKey,
                     CNContactJobTitleKey] as [Any]
         do {
             // Check if the contact exists
@@ -169,7 +171,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                 contact.nameSuffix = dictionary["suffix"] as? String ?? ""
                 contact.organizationName = dictionary["company"] as? String ?? ""
                 contact.jobTitle = dictionary["jobTitle"] as? String ?? ""
-                contact.note = dictionary["note"] as? String ?? ""
                 
                 //Phone numbers
                 if let phoneNumbers = dictionary["phones"] as? [[String:String]]{
@@ -206,6 +207,26 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                     contact.postalAddresses = updatedPostalAddresses
                 }
                 
+                if let events = dictionary["events"] as? [[String:String]]{
+                    for event in events {
+                        guard let dateString = event["value"], let date = df.date(from: dateString) else {
+                            continue
+                        }
+                        
+                        let label = event["label"] ?? ""
+                        let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: date)
+                        if label == "birthday" {
+                            contact.birthday = dateComponents
+                        } else {
+                            let nsDateComponents = NSDateComponents()
+                            nsDateComponents.year = dateComponents.year ?? 0
+                            nsDateComponents.month = dateComponents.month ?? 0
+                            nsDateComponents.day = dateComponents.day ?? 0
+                            contact.dates.append(CNLabeledValue(label: label, value: nsDateComponents))
+                        }
+                    }
+                }
+                
                 // Attempt to update the contact
                 let request = CNSaveRequest()
                 request.update(contact)
@@ -230,7 +251,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
         contact.nameSuffix = dictionary["suffix"] as? String ?? ""
         contact.organizationName = dictionary["company"] as? String ?? ""
         contact.jobTitle = dictionary["jobTitle"] as? String ?? ""
-        contact.note = dictionary["note"] as? String ?? ""
         if let avatarData = (dictionary["avatar"] as? FlutterStandardTypedData)?.data {
             contact.imageData = avatarData
         }
@@ -263,12 +283,31 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                 contact.postalAddresses.append(CNLabeledValue(label:label, value:newAddress))
             }
         }
+        
+        if let events = dictionary["events"] as? [[String:String]]{
+            for event in events {
+                guard let dateString = event["value"], let date = df.date(from: dateString) else {
+                    continue
+                }
+                
+                let label = event["label"] ?? ""
+                let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: date)
+                if label == "birthday" {
+                    contact.birthday = dateComponents
+                } else {
+                    let nsDateComponents = NSDateComponents()
+                    nsDateComponents.year = dateComponents.year ?? 0
+                    nsDateComponents.month = dateComponents.month ?? 0
+                    nsDateComponents.day = dateComponents.day ?? 0
+                    contact.dates.append(CNLabeledValue(label: label, value: nsDateComponents))
+                }
+            }
+        }
 
         return contact
     }
     
     func contactToDictionary(contact: CNContact) -> [String:Any]{
-        
         var result = [String:Any]()
         
         //Simple fields
@@ -281,7 +320,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
         result["suffix"] = contact.nameSuffix
         result["company"] = contact.organizationName
         result["jobTitle"] = contact.jobTitle
-        result["note"] = contact.note
         if contact.isKeyAvailable(CNContactThumbnailImageDataKey) {
             if let avatarData = contact.thumbnailImageData {
                 result["avatar"] = FlutterStandardTypedData(bytes: avatarData)
@@ -344,9 +382,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
             urlAddresses.append(urlDictionary)
         }
         result["webs"] = urlAddresses
-        
-        let df = DateFormatter()
-        df.dateFormat = "yyyy-MM-dd"
         
         //Events
         var events = [[String:String]]()
