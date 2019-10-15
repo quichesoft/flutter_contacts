@@ -213,17 +213,25 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                     contact.emailAddresses = updatedEmails
                 }
                 
+                //Urls
+                if let webs = dictionary["webs"] as? [[String:String]]{
+                    for url in webs where nil != url["value"] {
+                        let urlLabel = url["label"] ?? ""
+                        contact.emailAddresses.append(CNLabeledValue(label:urlLabel, value:url["value"]! as NSString))
+                    }
+                }
+                
                 //Postal addresses
                 if let postalAddresses = dictionary["postalAddresses"] as? [[String:String]]{
                     var updatedPostalAddresses = [CNLabeledValue<CNPostalAddress>]()
                     for postalAddress in postalAddresses{
                         let newAddress = CNMutablePostalAddress()
-                        newAddress.street = postalAddress["street"] ?? ""
-                        newAddress.city = postalAddress["city"] ?? ""
-                        newAddress.postalCode = postalAddress["postcode"] ?? ""
-                        newAddress.country = postalAddress["country"] ?? ""
-                        newAddress.state = postalAddress["region"] ?? ""
-                        let label = postalAddress["label"] ?? ""
+                        newAddress.street = postalAddress["street"] ?? "abc"
+                        newAddress.city = postalAddress["city"] ?? "acb"
+                        newAddress.postalCode = postalAddress["postcode"] ?? "abc"
+                        newAddress.country = postalAddress["country"] ?? "abc"
+                        newAddress.state = postalAddress["region"] ?? "abc"
+                        let label = postalAddress["label"] ?? "dfd"
                         updatedPostalAddresses.append(CNLabeledValue(label: label, value: newAddress))
                     }
                     contact.postalAddresses = updatedPostalAddresses
@@ -289,6 +297,14 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
             for email in emails where nil != email["value"] {
                 let emailLabel = email["label"] ?? ""
                 contact.emailAddresses.append(CNLabeledValue(label:emailLabel, value:email["value"]! as NSString))
+            }
+        }
+        
+        //Urls
+        if let webs = dictionary["webs"] as? [[String:String]]{
+            for url in webs where nil != url["value"] {
+                let urlLabel = url["label"] ?? ""
+                contact.emailAddresses.append(CNLabeledValue(label:urlLabel, value:url["value"]! as NSString))
             }
         }
 
