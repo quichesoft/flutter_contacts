@@ -159,6 +159,7 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                     CNContactOrganizationNameKey,
                     CNContactBirthdayKey,
                     CNContactDatesKey,
+                    CNContactUrlAddressesKey,
                     CNContactJobTitleKey] as [Any]
         do {
             // Check if the contact exists
@@ -217,7 +218,7 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                 if let webs = dictionary["webs"] as? [[String:String]]{
                     for url in webs where nil != url["value"] {
                         let urlLabel = url["label"] ?? ""
-                        contact.emailAddresses.append(CNLabeledValue(label:urlLabel, value:url["value"]! as NSString))
+                        contact.urlAddresses.append(CNLabeledValue(label:urlLabel, value:url["value"]! as NSString))
                     }
                 }
                 
@@ -226,12 +227,12 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                     var updatedPostalAddresses = [CNLabeledValue<CNPostalAddress>]()
                     for postalAddress in postalAddresses{
                         let newAddress = CNMutablePostalAddress()
-                        newAddress.street = postalAddress["street"] ?? "abc"
-                        newAddress.city = postalAddress["city"] ?? "acb"
-                        newAddress.postalCode = postalAddress["postcode"] ?? "abc"
-                        newAddress.country = postalAddress["country"] ?? "abc"
-                        newAddress.state = postalAddress["region"] ?? "abc"
-                        let label = postalAddress["label"] ?? "dfd"
+                        newAddress.street = postalAddress["street"] ?? ""
+                        newAddress.city = postalAddress["city"] ?? ""
+                        newAddress.postalCode = postalAddress["postcode"] ?? ""
+                        newAddress.country = postalAddress["country"] ?? ""
+                        newAddress.state = postalAddress["region"] ?? ""
+                        let label = postalAddress["label"] ?? ""
                         updatedPostalAddresses.append(CNLabeledValue(label: label, value: newAddress))
                     }
                     contact.postalAddresses = updatedPostalAddresses
