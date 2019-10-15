@@ -229,17 +229,17 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                     contact.postalAddresses = updatedPostalAddresses
                 }
                 
-                if let events = dictionary["events"] as? [[String:String]]{
+                if let events = dictionary["events"] as? [[String:Any]]{
                     for event in events {
-                        guard let dateString = event["value"], let date = df.date(from: dateString) else {
+                        guard let dateString = event["value"] as? String, let date = df.date(from: dateString) else {
                             continue
                         }
                         
-                        let label = event["label"] ?? ""
                         let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: date)
-                        if label.lowercased() == "birthday" {
+                        if event["isBirthday"] as? Bool == true {
                             contact.birthday = dateComponents
                         } else {
+                            let label = event["label"] as? String ?? ""
                             let nsDateComponents = NSDateComponents()
                             nsDateComponents.year = dateComponents.year ?? 0
                             nsDateComponents.month = dateComponents.month ?? 0
@@ -306,18 +306,17 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
             }
         }
         
-        if let events = dictionary["events"] as? [[String:String]]{
+        if let events = dictionary["events"] as? [[String:Any]]{
             for event in events {
-                print("Adding events")
-                guard let dateString = event["value"], let date = df.date(from: dateString) else {
+                guard let dateString = event["value"] as? String, let date = df.date(from: dateString) else {
                     continue
                 }
                 
-                let label = event["label"] ?? ""
                 let dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: date)
-                if label == "birthday" {
+                if event["isBirthday"] as? Bool == true {
                     contact.birthday = dateComponents
                 } else {
+                    let label = event["label"] as? String ?? ""
                     let nsDateComponents = NSDateComponents()
                     nsDateComponents.year = dateComponents.year ?? 0
                     nsDateComponents.month = dateComponents.month ?? 0
