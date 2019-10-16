@@ -305,7 +305,7 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
         if let webs = dictionary["webs"] as? [[String:String]]{
             for url in webs where nil != url["value"] {
                 let urlLabel = url["label"] ?? ""
-                contact.emailAddresses.append(CNLabeledValue(label:urlLabel, value:url["value"]! as NSString))
+                contact.urlAddresses.append(CNLabeledValue(label:urlLabel, value:url["value"]! as NSString))
             }
         }
 
