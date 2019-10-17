@@ -197,21 +197,17 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                 
                 //Phone numbers
                 if let phoneNumbers = dictionary["phones"] as? [[String:String]]{
-                    var updatedPhoneNumbers = [CNLabeledValue<CNPhoneNumber>]()
                     for phone in phoneNumbers where phone["value"] != nil {
-                        updatedPhoneNumbers.append(CNLabeledValue(label:getPhoneLabel(label: phone["label"]),value:CNPhoneNumber(stringValue: phone["value"]!)))
+                        contact.phoneNumbers.append(CNLabeledValue(label:getPhoneLabel(label: phone["label"]),value:CNPhoneNumber(stringValue: phone["value"]!)))
                     }
-                    contact.phoneNumbers = updatedPhoneNumbers
                 }
                 
                 //Emails
                 if let emails = dictionary["emails"] as? [[String:String]]{
-                    var updatedEmails = [CNLabeledValue<NSString>]()
                     for email in emails where nil != email["value"] {
                         let emailLabel = email["label"] ?? ""
-                        updatedEmails.append(CNLabeledValue(label: emailLabel, value: email["value"]! as NSString))
+                        contact.emailAddresses.append(CNLabeledValue(label: emailLabel, value: email["value"]! as NSString))
                     }
-                    contact.emailAddresses = updatedEmails
                 }
                 
                 //Urls
@@ -224,7 +220,6 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                 
                 //Postal addresses
                 if let postalAddresses = dictionary["postalAddresses"] as? [[String:String]]{
-                    var updatedPostalAddresses = [CNLabeledValue<CNPostalAddress>]()
                     for postalAddress in postalAddresses{
                         let newAddress = CNMutablePostalAddress()
                         newAddress.street = postalAddress["street"] ?? ""
@@ -233,9 +228,8 @@ public class SwiftContactsServicePlugin: NSObject, FlutterPlugin {
                         newAddress.country = postalAddress["country"] ?? ""
                         newAddress.state = postalAddress["region"] ?? ""
                         let label = postalAddress["label"] ?? ""
-                        updatedPostalAddresses.append(CNLabeledValue(label: label, value: newAddress))
+                        contact.postalAddresses.append(CNLabeledValue(label: label, value: newAddress))
                     }
-                    contact.postalAddresses = updatedPostalAddresses
                 }
                 
                 if let events = dictionary["events"] as? [[String:Any]]{
